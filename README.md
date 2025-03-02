@@ -38,11 +38,3 @@ Or directly via Cucumber.js:
 ```sh
 npx cucumber-js
 ```
-
-## ⚙ Cucumber Configuration
-Add a `cucumber.js` configuration file in the project root:
-```json
-module.exports = {
-  default: `--require features/step_definitions/**/*.js --format progress`
-};
-```
