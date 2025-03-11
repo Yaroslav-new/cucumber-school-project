@@ -37,26 +37,14 @@ Given('people are located at', function (dataTable) {
 });
 
 When('{person} shouts {string}', function (person, message) {
-  // if (!this.people[person]) {
-  //   throw new Error(`${person} is not defined in this.people`);
-  // }
   this.people[person].shout(message);
 });
 
 When('{person} shouts', function (person) {
-  //   if (!this.people[person]) {
-  //       throw new Error(`${person} is not defined in this.people`);
-  //   }
-  // if (!this.people[person]) {
-  //   throw new Error(`${person} is not defined in this.people`);
-  // }
   this.people[person].shout('Hello, world');
 });
 
 When('{person} shouts the following message', function (person, docString) {
-  // if (!this.people[person]) {
-  //   throw new Error(`${person} is not defined in this.people`);
-  // }
   this.people[person].shout(docString);
 });
 
@@ -65,12 +53,6 @@ Then('{person} should hear a shout', function (person) {
 });
 
 Then('{person} should hear {person2}\'s message', function (listener, shouter) {
-  // if (!this.people[listener]) {
-  //   throw new Error(`${listener} is not defined in this.people`);
-  // }
-  // if (!this.people[shouter]) {
-  //   throw new Error(`${shouter} is not defined in this.people`);
-  // }
   assertThat(this.people[listener].messagesHeard(), is(this.people[shouter].messagesHeard()));
 });
 
