@@ -1,12 +1,16 @@
 class Person {
-    constructor(network) {
+    constructor(network, location) {
         this.messages = [];
         this.network = network;
-        this.network.subscribe(this);
+        this.location = location;
+
+        if (this.network) {
+            this.network.subscribe(this);
+        }
     }
 
     shout(message) {
-        this.network.broadcast(message);
+        this.network.broadcast(message, this.location);
     }
 
     hear(message) {
@@ -19,16 +23,22 @@ class Person {
 }
 
 class Network {
-    constructor() {
-        this.subscribers = [];
+    constructor(range) {
+        this.listeners = [];
+        this.range = range;
     }
 
     subscribe(person) {
-        this.subscribers.push(person);
+        this.listeners.push(person);
     }
 
-    broadcast(message) {
-        this.subscribers.forEach(subscriber => subscriber.hear(message));
+    broadcast(message, shouterLocation) {
+        this.listeners.forEach(listener => {
+            const withinRange = Math.abs(listener.location - shouterLocation) <= this.range;
+            if (withinRange && message.length <= 180) {
+                listener.hear(message);
+            }
+        });
     }
 }
 

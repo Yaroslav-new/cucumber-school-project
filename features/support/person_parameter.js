@@ -1,9 +1,10 @@
 const { defineParameterType } = require("@cucumber/cucumber");
-const Person = require("../../src/shouty/shouty");
-const { regExp } = require("hamjest");
+const { Person, Network } = require("../../src/shouty/shouty");
+
+const sharedNetwork = new Network(100);
 
 defineParameterType({
     name: 'person',
-    regexp: /Lucy|Sean/,
-    transformer: name => new Person(name)
+    regexp: /Lucy|Sean|Larry/,
+    transformer: name => name
 });
