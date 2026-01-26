@@ -1,6 +1,7 @@
 class Person {
     constructor(network, location) {
         this.messages = [];
+        this.shouts = [];
         this.network = network;
         this.location = location;
 
@@ -10,6 +11,7 @@ class Person {
     }
 
     shout(message) {
+        this.shouts.push(message);
         this.network.broadcast(message, this.location);
     }
 
@@ -19,6 +21,10 @@ class Person {
 
     messagesHeard() {
         return this.messages;
+    }
+
+    messagesShouted() {
+        return this.shouts;
     }
 }
 

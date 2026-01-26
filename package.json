@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js"
+    "test": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" -f @cucumber/pretty-formatter",
+    "test:json": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" --format json:report.json",
+    "test:html": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" --format html:report.html"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +14,7 @@
   "description": "",
   "devDependencies": {
     "@cucumber/cucumber": "^11.2.0",
+    "@cucumber/pretty-formatter": "latest",
     "hamjest": "^4.1.0"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { Person, Network } = require('../src/shouty/shouty');
+const { Person, Network } = require('../shouty');
 
 describe('Network', () => {
     let network, message;

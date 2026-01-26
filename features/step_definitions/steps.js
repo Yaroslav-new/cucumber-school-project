@@ -1,6 +1,6 @@
 const { Before, Given, When, Then } = require("@cucumber/cucumber");
 const { Person, Network } = require("../../src/shouty/shouty");
-const { assertThat, is, not } = require("hamjest");
+const { assertThat, is } = require("hamjest");
 
 const default_range = 100;
 
@@ -27,13 +27,6 @@ Given('people are located at', function (dataTable) {
       this.people[row.name].location = parseInt(row.location, 10);
     }
   });
-  dataTable.hashes().forEach(row => {
-    if (!this.people[row.name]) {
-      this.people[row.name] = new Person(this.network, parseInt(row.location, 10));
-    } else {
-      this.people[row.name].location = parseInt(row.location, 10);
-    }
-  });
 });
 
 When('{person} shouts {string}', function (person, message) {
@@ -53,7 +46,7 @@ Then('{person} should hear a shout', function (person) {
 });
 
 Then('{person} should hear {person2}\'s message', function (listener, shouter) {
-  assertThat(this.people[listener].messagesHeard(), is(this.people[shouter].messagesHeard()));
+  assertThat(this.people[listener].messagesHeard(), is(this.people[shouter].messagesShouted()));
 });
 
 Then('{person} should not hear a shout', function (person) {
