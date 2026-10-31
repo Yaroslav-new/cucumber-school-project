@@ -1,23 +1,28 @@
 {
-  "name": "cucumber_practise",
+  "name": "cucumber_practice",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" -f @cucumber/pretty-formatter",
-    "test:json": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" --format json:report.json",
-    "test:html": "cucumber-js \"features/**/*.feature\" --require \"features/step_definitions/**/*.js\" --require \"features/support/**/*.js\" --format html:report.html"
+    "test": "cucumber-js",
+    "test:json": "cucumber-js -p json",
+    "test:html": "cucumber-js -p html",
+    "test:unit": "mocha src/shouty/test",
+    "test:unit:ci": "mocha src/shouty/test --reporter xunit --reporter-option output=reports/unit-junit.xml",
+    "test:bdd:ci": "cucumber-js -p ci",
+    "test:all": "npm run test:unit && npm test"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
-  "description": "",
+  "description": "Cucumber School practice project: BDD tests for the Shouty app",
+  "engines": {
+    "node": "^22.12.0 || >=24"
+  },
   "devDependencies": {
     "@cucumber/cucumber": "^11.2.0",
-    "@cucumber/pretty-formatter": "latest",
-    "hamjest": "^4.1.0"
-  },
-  "dependencies": {
-    "reflect-metadata": "^0.2.2"
+    "@cucumber/pretty-formatter": "^2.4.1",
+    "hamjest": "^4.1.0",
+    "mocha": "^12.0.3"
   }
 }
