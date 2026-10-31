@@ -1,7 +1,7 @@
 const { Given, When, Then } = require("@cucumber/cucumber");
 const { assertThat, is } = require("hamjest");
 
-Given("CAT HAZ FOOD", function () {
+Given("CAT WIF FOOD", function () {
   this.catHasFood = true;
 });
 

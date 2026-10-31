@@ -20,3 +20,6 @@ node_modules/
 # Test reports
 report.html
 report.json
+
+# CI test reports
+reports/

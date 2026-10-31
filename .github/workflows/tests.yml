@@ -1,0 +1,81 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the run that is still in progress.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  # Stage 1: three runners (one per OS) start at the same time.
+  test:
+    name: Tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Keep the other runners going if one OS fails, so the report shows all three.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests (mocha)
+        run: npm run test:unit:ci
+
+      # Runs even if unit tests failed, so both results reach the report.
+      - name: BDD scenarios (cucumber)
+        if: ${{ !cancelled() }}
+        run: npm run test:bdd:ci
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: reports/
+          retention-days: 14
+
+  # Stage 2: waits for all three runners and builds one combined report.
+  report:
+    name: Test report
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write         # "Test Results" check on the commit / PR
+      pull-requests: write  # summary comment in the PR
+
+    steps:
+      - name: Download results from all runners
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-results-*
+          path: results
+
+      - name: Publish combined report
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: Test Results
+          files: results/**/*.xml
