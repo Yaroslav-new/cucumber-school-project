@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}
           path: reports/
@@ -95,7 +95,7 @@ jobs:
       # One artifact with a folder per OS: test-report/test-results-<os>/...
       - name: Merge results from all runners into one artifact
         id: merge
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v7
         with:
           name: test-report
           pattern: test-results-*
@@ -104,7 +104,7 @@ jobs:
           retention-days: 14
 
       - name: Download combined results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: test-report
           path: results
@@ -115,8 +115,11 @@ jobs:
           check_name: Test Results
           files: results/**/*.xml
 
+      # The link goes to two places: the Annotations box (visible on every page of the run)
+      # and the run Summary page.
       - name: Link to the combined artifact
         run: |
+          echo "::notice title=📦 Full test report::Download test-report (Ubuntu, Windows, macOS; kept for 14 days): ${{ steps.merge.outputs.artifact-url }}"
           echo "### 📦 Full test report" >> "$GITHUB_STEP_SUMMARY"
           echo "JUnit XML and Cucumber HTML reports from Ubuntu, Windows and macOS:" >> "$GITHUB_STEP_SUMMARY"
           echo "[Download test-report](${{ steps.merge.outputs.artifact-url }}) (kept for 14 days)" >> "$GITHUB_STEP_SUMMARY"
