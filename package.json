@@ -9,7 +9,10 @@
     "test:unit": "mocha src/shouty/test",
     "test:unit:ci": "mocha src/shouty/test --reporter xunit --reporter-option output=reports/unit-junit.xml",
     "test:bdd:ci": "cucumber-js -p ci",
-    "test:all": "npm run test:unit && npm test"
+    "test:all": "npm run test:unit && npm test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
@@ -17,12 +20,17 @@
   "type": "commonjs",
   "description": "Cucumber School practice project: BDD tests for the Shouty app",
   "engines": {
-    "node": "^22.12.0 || >=24"
+    "node": "^22.13.0 || >=24"
   },
   "devDependencies": {
     "@cucumber/cucumber": "^11.2.0",
     "@cucumber/pretty-formatter": "^2.4.1",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
     "hamjest": "^4.1.0",
-    "mocha": "^12.0.3"
+    "mocha": "^12.0.3",
+    "prettier": "^3.9.10"
   }
 }

@@ -19,6 +19,29 @@ env:
   NODE_VERSION: 24
 
 jobs:
+  # Code style check. Runs in parallel with the tests; one OS is enough for it.
+  lint:
+    name: Lint and format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      # Runs even if ESLint failed, so both problems are visible at once.
+      - name: Prettier
+        if: ${{ !cancelled() }}
+        run: npm run format:check
+
   # Stage 1: three runners (one per OS) start at the same time.
   test:
     name: Tests on ${{ matrix.os }}
@@ -50,7 +73,7 @@ jobs:
 
       - name: Upload test results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}
           path: reports/
@@ -64,14 +87,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write         # "Test Results" check on the commit / PR
-      pull-requests: write  # summary comment in the PR
+      actions: write # delete the per-OS artifacts after merging them
+      checks: write # "Test Results" check on the commit / PR
+      pull-requests: write # summary comment in the PR
 
     steps:
-      - name: Download results from all runners
-        uses: actions/download-artifact@v4
+      # One artifact with a folder per OS: test-report/test-results-<os>/...
+      - name: Merge results from all runners into one artifact
+        id: merge
+        uses: actions/upload-artifact/merge@v7
         with:
+          name: test-report
           pattern: test-results-*
+          separate-directories: true
+          delete-merged: true
+          retention-days: 14
+
+      - name: Download combined results
+        uses: actions/download-artifact@v8
+        with:
+          name: test-report
           path: results
 
       - name: Publish combined report
@@ -79,3 +114,12 @@ jobs:
         with:
           check_name: Test Results
           files: results/**/*.xml
+
+      # The link goes to two places: the Annotations box (visible on every page of the run)
+      # and the run Summary page.
+      - name: Link to the combined artifact
+        run: |
+          echo "::notice title=📦 Full test report::Download test-report (Ubuntu, Windows, macOS; kept for 14 days): ${{ steps.merge.outputs.artifact-url }}"
+          echo "### 📦 Full test report" >> "$GITHUB_STEP_SUMMARY"
+          echo "JUnit XML and Cucumber HTML reports from Ubuntu, Windows and macOS:" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download test-report](${{ steps.merge.outputs.artifact-url }}) (kept for 14 days)" >> "$GITHUB_STEP_SUMMARY"
