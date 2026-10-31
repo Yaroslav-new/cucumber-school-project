@@ -19,6 +19,29 @@ env:
   NODE_VERSION: 24
 
 jobs:
+  # Code style check. Runs in parallel with the tests; one OS is enough for it.
+  lint:
+    name: Lint and format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      # Runs even if ESLint failed, so both problems are visible at once.
+      - name: Prettier
+        if: ${{ !cancelled() }}
+        run: npm run format:check
+
   # Stage 1: three runners (one per OS) start at the same time.
   test:
     name: Tests on ${{ matrix.os }}
@@ -64,8 +87,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write         # "Test Results" check on the commit / PR
-      pull-requests: write  # summary comment in the PR
+      checks: write # "Test Results" check on the commit / PR
+      pull-requests: write # summary comment in the PR
 
     steps:
       - name: Download results from all runners

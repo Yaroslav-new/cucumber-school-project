@@ -1,6 +1,6 @@
-const { Before, Given, When, Then } = require("@cucumber/cucumber");
-const { Person, Network } = require("../../src/shouty/shouty");
-const { assertThat, is } = require("hamjest");
+const { Before, Given, When, Then } = require('@cucumber/cucumber');
+const { Person, Network } = require('../../src/shouty/shouty');
+const { assertThat, is } = require('hamjest');
 
 const DEFAULT_RANGE = 100;
 
@@ -21,7 +21,7 @@ Given('a person named {word}', function (name) {
 });
 
 Given('people are located at', function (dataTable) {
-  dataTable.hashes().forEach(row => {
+  dataTable.hashes().forEach((row) => {
     const location = Number(row.location);
     if (!Number.isInteger(location)) {
       throw new Error(`Location of ${row.name} must be an integer, got "${row.location}"`);
@@ -55,7 +55,7 @@ Then('{person} should hear a shout', function (person) {
   assertThat(person.messagesHeard().length, is(1));
 });
 
-Then('{person} should hear {person}\'s message', function (listener, shouter) {
+Then("{person} should hear {person}'s message", function (listener, shouter) {
   assertThat(listener.messagesHeard(), is(shouter.messagesShouted()));
 });
 
@@ -65,5 +65,5 @@ Then('{person} should not hear a shout', function (person) {
 
 Then('{person} hears the following messages:', function (person, expectedMessages) {
   const actualMessages = person.messagesHeard();
-  assertThat(actualMessages, is(expectedMessages.raw().map(row => row[0])));
+  assertThat(actualMessages, is(expectedMessages.raw().map((row) => row[0])));
 });

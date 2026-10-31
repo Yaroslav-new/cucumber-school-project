@@ -1,14 +1,14 @@
-const { Given, When, Then } = require("@cucumber/cucumber");
-const { assertThat, is } = require("hamjest");
+const { Given, When, Then } = require('@cucumber/cucumber');
+const { assertThat, is } = require('hamjest');
 
-Given("CAT WIF FOOD", function () {
+Given('CAT WIF FOOD', function () {
   this.catHasFood = true;
 });
 
-When("CAT EATZ", function () {
+When('CAT EATZ', function () {
   this.catIsHappy = Boolean(this.catHasFood);
 });
 
-Then("CAT IZ HAPPY", function () {
+Then('CAT IZ HAPPY', function () {
   assertThat(this.catIsHappy, is(true));
 });
