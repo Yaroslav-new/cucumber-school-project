@@ -61,6 +61,17 @@ Feature: Hear shout
         | 100      | should hear a shout     |
         | 101      | should not hear a shout |
 
+  Rule: Range cannot be negative
+
+    Scenario: Negative range is rejected
+      Given a person named Sean
+      And a person named Lucy
+      When the range is changed to -5
+      Then the new range should be rejected
+      # The range stays at the default 100, so Lucy still hears Sean.
+      When Sean shouts
+      Then Lucy should hear a shout
+
   Rule: Listener should be able to hear multiple shouts
 
     Scenario: Two shouts

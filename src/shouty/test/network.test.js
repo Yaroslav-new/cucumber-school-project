@@ -56,6 +56,43 @@ describe('Network', () => {
     assert.strictEqual(network.broadcast(longMessage, sean), false);
     assert.strictEqual(lucy.messagesHeard().length, 0);
   });
+
+  it('counts an emoji as one character', function () {
+    const lucy = new Person(network, 90);
+    const emojiMessage = '🥯'.repeat(MAX_MESSAGE_LENGTH);
+
+    assert.strictEqual(network.broadcast(emojiMessage, sean), true);
+    assert.deepStrictEqual(lucy.messagesHeard(), [emojiMessage]);
+  });
+
+  it('rejects a message that is not a string', function () {
+    assert.throws(() => network.broadcast(12345, sean), TypeError);
+    assert.throws(() => network.broadcast(null, sean), TypeError);
+  });
+
+  it('rejects a range that is missing, negative or not a number', function () {
+    assert.throws(() => new Network(), TypeError);
+    assert.throws(() => new Network(-1), TypeError);
+    assert.throws(() => (network.range = 'far'), TypeError);
+  });
+
+  it('delivers a message only once to a person subscribed twice', function () {
+    const lucy = new Person(network, 90);
+    network.subscribe(lucy);
+
+    network.broadcast(message, sean);
+
+    assert.deepStrictEqual(lucy.messagesHeard(), [message]);
+  });
+
+  it('does not deliver messages to an unsubscribed person', function () {
+    const lucy = new Person(network, 90);
+    network.unsubscribe(lucy);
+
+    network.broadcast(message, sean);
+
+    assert.strictEqual(lucy.messagesHeard().length, 0);
+  });
 });
 
 describe('Person', () => {
@@ -69,10 +106,22 @@ describe('Person', () => {
     assert.throws(() => new Person(null, 0), /requires a network/);
   });
 
+  it('requires a numeric location', function () {
+    assert.throws(() => new Person(network), TypeError);
+    assert.throws(() => new Person(network, '5'), TypeError);
+  });
+
   it('rejects a message that is not a string', function () {
     const sean = new Person(network, 0);
 
     assert.throws(() => sean.shout(123), TypeError);
+  });
+
+  it('reports whether the message was sent', function () {
+    const sean = new Person(network, 0);
+
+    assert.strictEqual(sean.shout('Free bagels!'), true);
+    assert.strictEqual(sean.shout('x'.repeat(MAX_MESSAGE_LENGTH + 1)), false);
   });
 
   it('remembers only messages that were actually sent', function () {

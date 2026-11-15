@@ -1,5 +1,6 @@
 const { Before, Given, When, Then } = require('@cucumber/cucumber');
 const { Person, Network } = require('../../src/shouty/shouty');
+const { assertValidPersonName } = require('../support/person_parameter');
 const { assertThat, is } = require('hamjest');
 
 const DEFAULT_RANGE = 100;
@@ -14,7 +15,24 @@ Given('the range is {int}', function (range) {
   this.network.range = range;
 });
 
+// Tries to change the range and keeps the error, so the next step can check the rejection.
+When('the range is changed to {int}', function (range) {
+  this.rangeError = undefined;
+  try {
+    this.network.range = range;
+  } catch (error) {
+    this.rangeError = error;
+  }
+});
+
+Then('the new range should be rejected', function () {
+  if (!(this.rangeError instanceof TypeError)) {
+    throw new Error('Expected the range change to be rejected, but it was accepted');
+  }
+});
+
 Given('a person named {word}', function (name) {
+  assertValidPersonName(name);
   if (!this.people[name]) {
     this.people[name] = new Person(this.network, 0);
   }
@@ -22,6 +40,7 @@ Given('a person named {word}', function (name) {
 
 Given('people are located at', function (dataTable) {
   dataTable.hashes().forEach((row) => {
+    assertValidPersonName(row.name);
     const location = Number(row.location);
     if (!Number.isInteger(location)) {
       throw new Error(`Location of ${row.name} must be an integer, got "${row.location}"`);
@@ -56,7 +75,12 @@ Then('{person} should hear a shout', function (person) {
 });
 
 Then("{person} should hear {person}'s message", function (listener, shouter) {
-  assertThat(listener.messagesHeard(), is(shouter.messagesShouted()));
+  const shouted = shouter.messagesShouted();
+  // Without this, two empty lists would match and the step would pass with nothing sent.
+  if (shouted.length === 0) {
+    throw new Error('The shouter has not sent any message');
+  }
+  assertThat(listener.messagesHeard(), is(shouted));
 });
 
 Then('{person} should not hear a shout', function (person) {

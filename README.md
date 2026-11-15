@@ -33,7 +33,7 @@ npm install
 │   ├── shouty.js               # Main logic file
 │   ├── test/
 │   │   ├── network.test.js      # Unit tests for Network/Person
-│── .github/workflows/tests.yml # CI: lint + tests on Ubuntu, Windows, macOS
+│── .github/workflows/tests.yml # CI: lint + tests on Ubuntu, Windows, macOS (Node 22 and 24)
 │── cucumber.js                 # Cucumber profiles (default, json, html, ci)
 │── eslint.config.js            # ESLint rules
 │── .prettierrc.json            # Prettier settings
@@ -48,9 +48,9 @@ npm install
 ## ▶ Running Tests
 
 ```sh
-npm test            # Cucumber scenarios (pretty output)
+npm test            # Everything: unit tests, then Cucumber scenarios
 npm run test:unit   # Mocha unit tests for src/shouty
-npm run test:all    # Both
+npm run test:bdd    # Cucumber scenarios (pretty output)
 ```
 
 Or generate reports:
@@ -72,5 +72,6 @@ npm run format        # Prettier: fix formatting in place
 
 ## 📝 Notes
 
+- The range must be a number that is zero or more, and a location must be a number. `Network` and `Person` throw a `TypeError` otherwise, both when they are created and when the value is changed later.
 - `features/support/` contains custom parameter types (e.g., `{person}`), so support files must be loaded. `cucumber.js` already includes them, so a plain `npx cucumber-js` works too.
 - `features/cat.feature` uses the `en-lol` (LOLCAT) language as a Gherkin keyword demo: `OH HAI` = Feature, `MISHUN` = Scenario, `I CAN HAZ` = Given, `WEN` = When, `DEN` = Then.

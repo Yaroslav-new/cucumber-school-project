@@ -12,13 +12,24 @@ class Person {
     this.network.subscribe(this);
   }
 
-  shout(message) {
-    if (typeof message !== 'string') {
-      throw new TypeError(`Message must be a string, got ${typeof message}`);
+  get location() {
+    return this._location;
+  }
+
+  set location(value) {
+    if (!Number.isFinite(value)) {
+      throw new TypeError(`Location must be a finite number, got ${value}`);
     }
-    if (this.network.broadcast(message, this)) {
+    this._location = value;
+  }
+
+  // Returns true if the message was sent, false if the network rejected it (too long).
+  shout(message) {
+    const sent = this.network.broadcast(message, this);
+    if (sent) {
       this.shouts.push(message);
     }
+    return sent;
   }
 
   hear(message) {
@@ -37,17 +48,37 @@ class Person {
 
 class Network {
   constructor(range) {
-    this.listeners = [];
+    // A Set, so subscribing the same person twice does not duplicate their messages.
+    this.listeners = new Set();
     this.range = range;
   }
 
+  get range() {
+    return this._range;
+  }
+
+  set range(value) {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new TypeError(`Range must be a non-negative finite number, got ${value}`);
+    }
+    this._range = value;
+  }
+
   subscribe(person) {
-    this.listeners.push(person);
+    this.listeners.add(person);
+  }
+
+  unsubscribe(person) {
+    this.listeners.delete(person);
   }
 
   // Returns true if the message was sent, false if it was rejected (too long).
   broadcast(message, shouter) {
-    if (message.length > MAX_MESSAGE_LENGTH) {
+    if (typeof message !== 'string') {
+      throw new TypeError(`Message must be a string, got ${typeof message}`);
+    }
+    // Spread counts characters (code points), so an emoji is one character, not two.
+    if ([...message].length > MAX_MESSAGE_LENGTH) {
       return false;
     }
 

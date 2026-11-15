@@ -5,16 +5,12 @@ const common = {
 };
 
 module.exports = {
-  default: { ...common, format: ['@cucumber/pretty-formatter'] },
+  default: { ...common, format: ['pretty'] },
   json: { ...common, format: ['json:report.json'] },
   html: { ...common, format: ['html:report.html'] },
   // Used in GitHub Actions: readable log + JUnit XML for the summary + HTML report as an artifact.
   ci: {
     ...common,
-    format: [
-      '@cucumber/pretty-formatter',
-      'junit:reports/cucumber-junit.xml',
-      'html:reports/cucumber-report.html',
-    ],
+    format: ['pretty', 'junit:reports/cucumber-junit.xml', 'html:reports/cucumber-report.html'],
   },
 };

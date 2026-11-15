@@ -16,6 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # Node version for the lint job. The tests run on every supported version (see the matrix).
   NODE_VERSION: 24
 
 jobs:
@@ -42,22 +43,24 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run format:check
 
-  # Stage 1: three runners (one per OS) start at the same time.
+  # Stage 1: six runners (each OS with each supported Node version) start at the same time.
   test:
-    name: Tests on ${{ matrix.os }}
+    name: Tests on ${{ matrix.os }}, Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
-      # Keep the other runners going if one OS fails, so the report shows all three.
+      # Keep the other runners going if one fails, so the report shows all of them.
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        # Both versions allowed by "engines" in package.json.
+        node: [22, 24]
 
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ matrix.node }}
           cache: npm
 
       - name: Install dependencies
@@ -75,11 +78,11 @@ jobs:
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: test-results-${{ matrix.os }}
+          name: test-results-${{ matrix.os }}-node${{ matrix.node }}
           path: reports/
           retention-days: 14
 
-  # Stage 2: waits for all three runners and builds one combined report.
+  # Stage 2: waits for all test runners and builds one combined report.
   report:
     name: Test report
     needs: test
@@ -90,9 +93,13 @@ jobs:
       actions: write # delete the per-OS artifacts after merging them
       checks: write # "Test Results" check on the commit / PR
       pull-requests: write # summary comment in the PR
+    env:
+      # PRs from forks and from Dependabot get a read-only token whatever "permissions" says.
+      # For them the job skips everything that needs write access and keeps the run summary.
+      CAN_WRITE: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
 
     steps:
-      # One artifact with a folder per OS: test-report/test-results-<os>/...
+      # One artifact with a folder per runner: test-report/test-results-<os>-node<version>/...
       - name: Merge results from all runners into one artifact
         id: merge
         uses: actions/upload-artifact/merge@v7
@@ -100,7 +107,7 @@ jobs:
           name: test-report
           pattern: test-results-*
           separate-directories: true
-          delete-merged: true
+          delete-merged: ${{ env.CAN_WRITE }}
           retention-days: 14
 
       - name: Download combined results
@@ -114,6 +121,8 @@ jobs:
         with:
           check_name: Test Results
           files: results/**/*.xml
+          check_run: ${{ env.CAN_WRITE }}
+          comment_mode: ${{ env.CAN_WRITE == 'true' && 'always' || 'off' }}
 
       # The link goes to two places: the Annotations box (visible on every page of the run)
       # and the run Summary page.
